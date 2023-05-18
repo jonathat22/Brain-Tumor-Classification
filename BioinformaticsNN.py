@@ -184,7 +184,7 @@ def plot_results(history, epoch_lst):
 if __name__ == '__main__':
     #device = torch.device("mps")
     kwargs = {'num_workers': 4, 'pin_memory': True}
-    data_dir = '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project'
+    data_dir = '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project/Brain-Tumor-Classification'
     dataset = getDataset(data_dir)
     train_dl, val_dl = buildDataLoaders(dataset, kwargs)
     model = TumorClassification().to(torch.device("mps"))
@@ -195,4 +195,4 @@ if __name__ == '__main__':
     lr = 0.001
     results, epoch_lst = fit(num_epochs, lr, model, train_dl, val_dl, opt_func)
     plot_results(results, epoch_lst)
-    torch.save(model.state_dict(), '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project.pth')
+    torch.save(model.state_dict(), '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project/Brain-Tumor-Classification/model.pth')
