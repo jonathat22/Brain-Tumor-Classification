@@ -18,8 +18,19 @@ import os
 from torchvision import datasets, transforms
 
 
+def data_transform(image_size, means, sds):
+    transform = T.Compose([
+            T.Resize(image_size),
+            T.ToTensor(),
+            T.RandomRotation(50),
+            T.RandomHorizontalFlip(0.4),
+            T.RandomVerticalFlip(0.35),
+            T.Normalize(means, sds)
+            ])
+    return transform
 
-def getDataset(data_dir):
+
+def getDataset(data_dir, transform):
     #print(os.listdir(data_dir))
     classes = os.listdir(data_dir + "/train")
     print("Classes:", classes)
@@ -32,19 +43,6 @@ def getDataset(data_dir):
     print('No. of training examples for meningioma tumor samples:', len(meningioma_brains))
     print('No. of training examples for pituitary tumor samples:', len(pituitary_brains))
     
-    
-    image_size = (32,32)
-    means = torch.tensor((0.2442, 0.1921, 0.4419))
-    sds = torch.tensor((0.0321, 0.1689, 0.0899))
-    transform = T.Compose([
-            T.Resize(image_size),
-            T.ToTensor(),
-            T.RandomRotation(50),
-            T.RandomHorizontalFlip(0.4),
-            T.RandomVerticalFlip(0.35),
-            T.Normalize(means, sds)
-            ])
-    
     dataset = datasets.ImageFolder(data_dir + '/train', transform = transform)
     return dataset
     
@@ -52,14 +50,10 @@ def getDataset(data_dir):
 def buildDataLoaders(dataset, kwargs):
     random_seed = 42
     torch.manual_seed(random_seed)
-    
     val_size = 307
     train_size = len(dataset) - val_size
-    
-    train_ds, val_ds = random_split(dataset, [train_size, val_size])
-    
+    train_ds, val_ds = random_split(dataset, [train_size, val_size])  
     train_dl = DataLoader(train_ds, batch_size=64, shuffle=True, **kwargs)
-    
     val_dl = DataLoader(val_ds, batch_size=128, **kwargs) 
     return train_dl, val_dl
 
@@ -185,7 +179,11 @@ if __name__ == '__main__':
     #device = torch.device("mps")
     kwargs = {'num_workers': 4, 'pin_memory': True}
     data_dir = '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project/Brain-Tumor-Classification'
-    dataset = getDataset(data_dir)
+    image_size = (32,32)
+    means = torch.tensor((0.2442, 0.1921, 0.4419))
+    sds = torch.tensor((0.0321, 0.1689, 0.0899))
+    transform = data_transform(image_size, means, sds)
+    dataset = getDataset(data_dir, transform)
     train_dl, val_dl = buildDataLoaders(dataset, kwargs)
     model = TumorClassification().to(torch.device("mps"))
     print("Evaluation Before Training:")
