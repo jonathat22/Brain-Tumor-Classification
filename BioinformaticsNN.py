@@ -33,13 +33,13 @@ def data_transform(image_size, means, sds):
 
 def getDataset(data_dir, transform):
     #print(os.listdir(data_dir))
-    classes = os.listdir(data_dir + "/train")
+    classes = os.listdir(data_dir + "/Training")
     print("Classes:", classes)
     
-    glioma_brains = os.listdir(data_dir + "/train/glioma")
-    pituitary_brains = os.listdir(data_dir + "/train/pituitary")
-    meningioma_brains = os.listdir(data_dir + "/train/meningioma")
-    healthy_brains = os.listdir(data_dir + "/train/notumor")
+    glioma_brains = os.listdir(data_dir + "/Training/glioma")
+    pituitary_brains = os.listdir(data_dir + "/Training/pituitary")
+    meningioma_brains = os.listdir(data_dir + "/Training/meningioma")
+    healthy_brains = os.listdir(data_dir + "/Training/notumor")
     
     print('No. of training examples for glioma tumor samples:', len(glioma_brains))
     print('No. of training examples for meningioma tumor samples:', len(meningioma_brains))
