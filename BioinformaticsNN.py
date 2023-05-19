@@ -20,6 +20,7 @@ from torchvision import datasets, transforms
 
 def data_transform(image_size, means, sds):
     transform = T.Compose([
+            T.Grayscale(3),
             T.Resize(image_size),
             T.ToTensor(),
             T.RandomRotation(50),
@@ -38,10 +39,12 @@ def getDataset(data_dir, transform):
     glioma_brains = os.listdir(data_dir + "/train/glioma")
     pituitary_brains = os.listdir(data_dir + "/train/pituitary")
     meningioma_brains = os.listdir(data_dir + "/train/meningioma")
+    healthy_brains = os.listdir(data_dir + "/train/notumor")
     
     print('No. of training examples for glioma tumor samples:', len(glioma_brains))
     print('No. of training examples for meningioma tumor samples:', len(meningioma_brains))
     print('No. of training examples for pituitary tumor samples:', len(pituitary_brains))
+    print('No. of training examples for healthy samples:', len(healthy_brains))
     
     dataset = datasets.ImageFolder(data_dir + '/train', transform = transform)
     return dataset
@@ -86,7 +89,8 @@ class modelFunctions(nn.Module):
         epoch_acc = torch.stack(batch_accs).mean()      # Combine accuracies
         return {'validation_loss': epoch_loss.item(), 
                 'validation_acc': epoch_acc.item()}
-    
+
+
     def result_per_epoch(self, epoch, result):
         print("Epoch [{}], train_loss: {:.4f}, validation_loss: {:.4f}, validation_acc: {:.4f}".format(
             epoch, result['train_loss'], result['validation_loss'], result['validation_acc']))
@@ -122,7 +126,7 @@ class TumorClassification(modelFunctions):
             nn.BatchNorm1d(1024),
             nn.Linear(1024, 512),
             nn.ReLU(),
-            nn.Linear(512, 3))
+            nn.Linear(512, 4))
         
     def forward(self, xb):
         return self.network(xb)
@@ -172,7 +176,7 @@ def plot_results(history, epoch_lst):
     ax2.set(xlabel='Epochs', ylabel='Loss')
     ax2.legend(['Training', 'Validation'])
     plt.show()
-    
+
     
 
 if __name__ == '__main__':
@@ -180,8 +184,8 @@ if __name__ == '__main__':
     kwargs = {'num_workers': 4, 'pin_memory': True}
     data_dir = '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project/Brain-Tumor-Classification'
     image_size = (32,32)
-    means = torch.tensor((0.2442, 0.1921, 0.4419))
-    sds = torch.tensor((0.0321, 0.1689, 0.0899))
+    means = torch.tensor((0.2031, 0.2031, 0.2031))
+    sds = torch.tensor((0.1547, 0.1547, 0.1547))
     transform = data_transform(image_size, means, sds)
     dataset = getDataset(data_dir, transform)
     train_dl, val_dl = buildDataLoaders(dataset, kwargs)
