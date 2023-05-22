@@ -20,7 +20,7 @@ from torchvision import datasets, transforms
 
 def data_transform(image_size, means, sds):
     transform = T.Compose([
-            T.Grayscale(3),
+            #T.Grayscale(3),
             T.Resize(image_size),
             T.ToTensor(),
             T.RandomRotation(50),
@@ -46,7 +46,7 @@ def getDataset(data_dir, transform):
     print('No. of training examples for pituitary tumor samples:', len(pituitary_brains))
     print('No. of training examples for healthy samples:', len(healthy_brains))
     
-    dataset = datasets.ImageFolder(data_dir + '/train', transform = transform)
+    dataset = datasets.ImageFolder(data_dir + '/Training', transform = transform)
     return dataset
     
     
@@ -107,6 +107,7 @@ class TumorClassification(modelFunctions):
             nn.MaxPool2d(2, 2), # output: 64 x 16 x 16
             nn.BatchNorm2d(64),
 
+
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
@@ -114,11 +115,13 @@ class TumorClassification(modelFunctions):
             nn.MaxPool2d(2, 2), # output: 128 x 8 x 8
             nn.BatchNorm2d(128),
 
+
             nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2), # output: 256 x 4 x 4
+
 
             nn.Flatten(), 
             nn.Linear(4096, 1024),
@@ -184,15 +187,24 @@ if __name__ == '__main__':
     kwargs = {'num_workers': 4, 'pin_memory': True}
     data_dir = '/Users/Jonathan/Desktop/Errythang/MSDAS/Bioinformatics/project/Brain-Tumor-Classification'
     image_size = (32,32)
-    means = torch.tensor((0.2031, 0.2031, 0.2031))
-    sds = torch.tensor((0.1547, 0.1547, 0.1547))
+    means = torch.tensor((-0.0698, -0.1240,  0.3528))
+    sds = torch.tensor((0.9790, 1.1294, 1.3090))
     transform = data_transform(image_size, means, sds)
     dataset = getDataset(data_dir, transform)
+    print("Classes", dataset.classes)
+    #loader = DataLoader(dataset, batch_size=len(dataset), num_workers=1)
+    #data = next(iter(loader))
+    #mean1, mean2, mean3 = float(data[0][:, 0, :, :].mean()), float(data[0][:, 1, :, :].mean()), float(data[0][:, 2, :, :].mean())
+    #means15 = torch.tensor((mean1, mean2, mean3))
+    #sd1, sd2, sd3 = float(data[0][:, 0, :, :].std()), float(data[0][:, 1, :, :].std()), float(data[0][:, 2, :, :].std())
+    #sds15 = torch.tensor((sd1, sd2, sd3))
+    #print("means", means15)
+    #print("sds", sds15)
     train_dl, val_dl = buildDataLoaders(dataset, kwargs)
     model = TumorClassification().to(torch.device("mps"))
     print("Evaluation Before Training:")
     print(evaluate(model, val_dl))
-    num_epochs = 30
+    num_epochs = 25
     opt_func = torch.optim.Adam
     lr = 0.001
     results, epoch_lst = fit(num_epochs, lr, model, train_dl, val_dl, opt_func)
